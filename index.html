@@ -1145,7 +1145,7 @@
 
     function loadConfig() {
         initializeTheme();
-        fetch('https://cloudgraficaweb.github.io/CGVendas/scripts/sitegrafica/produtos.json?t=' + Date.now())
+        fetch('https://casadaimpressao.github.io/casadaimpressao/produtos/produtos/produtos.json?t=' + Date.now())
             .then(response => {
                 if (!response.ok) {
                    throw new Error('Network response was not ok');
@@ -1648,7 +1648,7 @@ function shareCategory(slug) {
         const username = document.getElementById('admin-username').value;
         const password = document.getElementById('admin-password').value;
 
-        if (username === 'cloud' && password === 'cloud') {
+        if (username === 'casaim' && password === '4152') {
             isAdminLoggedIn = true;
             adminLoginSection.classList.add('hidden');
             adminMainSection.classList.remove('hidden');
