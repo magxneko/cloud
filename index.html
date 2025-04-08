@@ -3,7 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Casa da Impressão</title>
+  <title>casa da impressão</title>
+    <!-- Metadados padrão -->
+  <meta name="title" content="Casa da Impressão - Soluções em Impressão Gráfica">
+  <meta name="description" content="Explore nossos serviços de impressão de alta qualidade: banners, cartões de visita, panfletos e mais. Personalize e peça já!">
+  <!-- Open Graph Metadados -->
+  <meta property="og:title" content="Casa da Impressão - Soluções em Impressão Gráfica">
+  <meta property="og:description" content="Explore nossos serviços de impressão de alta qualidade: banners, cartões de visita, panfletos e mais. Personalize e peça já!">
+  <meta property="og:image" content="https://casadaimpressao.github.io/casadaimpressao/assets/logo.png">
+  <meta property="og:url" content="https://casadaimpressao.github.io/casadaimpressao/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Casa da Impressão">
   <style>
     :root {
       --primary-hue: 221.2;
@@ -863,6 +873,21 @@
         .products-grid { grid-template-columns: 1fr; }
         .variations-grid { grid-template-columns: 1fr; }
     }
+	
+	@font-face {
+	  font-family: 'Coolvetica';
+	  src: url('https://casadaimpressao.github.io/casadaimpressao/assets/coolvetica.otf') format('opentype');
+	  font-weight: normal;
+	  font-style: normal;
+	}
+
+	.logo {
+	  font-size: 1.5rem;
+	  font-weight: 200;
+	  color: hsl(var(--primary));
+	  text-decoration: none;
+	  font-family: 'Coolvetica', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* Fallbacks */
+	}
   </style>
 </head>
 <body>
@@ -870,8 +895,8 @@
     <div class="container">
       <div class="header-content">
         <div class="logo-container" id="logo-link">
-          <img src="https://cloudgraficaweb.github.io/CGVendas/sites/casaimpressao.jpg" alt="Logo Casa da Impressão" class="logo-img">
-          <span class="logo">Casa da Impressão</span>
+          <img src="https://casadaimpressao.github.io/casadaimpressao/assets/logo.png" alt="Logo Casa da Impressão" class="logo-img">
+          <span class="logo">casa da impressão</span>
         </div>
 
         <div class="search-container">
@@ -1074,7 +1099,7 @@
         { name: "Cartões de Visita", slug: "cartoes-visita" },
         { name: "Panfletos e Flyers", slug: "panfletos" },
       ],
-      whatsappNumber: "5517988172210"
+      whatsappNumber: "551735253775"
     };
 
     let config = {};
@@ -1143,42 +1168,35 @@
         applyTheme(initialTheme);
     };
 
-    function loadConfig() {
-        initializeTheme();
-        fetch('https://casadaimpressao.github.io/casadaimpressao/produtos/produtos/produtos.json?t=' + Date.now())
-            .then(response => {
-                if (!response.ok) {
-                   throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data && Array.isArray(data.products) && Array.isArray(data.categories)) {
-                    config = { ...defaultConfig, ...data };
-                    localStorage.setItem('graficaConfig', JSON.stringify(config));
-                } else {
-                    throw new Error('Invalid config format');
-                }
-                initializeApp();
-            })
-            .catch((error) => {
-                console.error("Error loading remote config:", error);
-                const localConfig = localStorage.getItem('graficaConfig');
-                if (localConfig) {
-                    try {
-                        config = JSON.parse(localConfig);
-                        if (!config.products || !config.categories) {
-                            config = JSON.parse(JSON.stringify(defaultConfig));
-                        }
-                    } catch (e) {
-                         config = JSON.parse(JSON.stringify(defaultConfig));
-                    }
-                } else {
-                    config = JSON.parse(JSON.stringify(defaultConfig));
-                }
-                initializeApp();
-            });
-    }
+   function loadConfig() {
+    initializeTheme();
+    fetch('https://casadaimpressao.github.io/casadaimpressao/produtos/produtos.json?t=' + Date.now())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && Array.isArray(data.products) && Array.isArray(data.categories)) {
+                // Mesclar defaultConfig com dados remotos, mas sobrescrever whatsappNumber depois
+                config = { ...defaultConfig, ...data };
+                // Forçar o uso do número do código
+                config.whatsappNumber = defaultConfig.whatsappNumber;
+                localStorage.setItem('graficaConfig', JSON.stringify(config));
+            } else {
+                throw new Error('Invalid config format');
+            }
+            initializeApp();
+        })
+        .catch((error) => {
+            console.error("Error loading remote config:", error);
+            // Em caso de erro, usar defaultConfig diretamente e forçar o número
+            config = JSON.parse(JSON.stringify(defaultConfig));
+            config.whatsappNumber = defaultConfig.whatsappNumber; // Garantir o número do código
+            initializeApp();
+        });
+}
 
     function initializeApp() {
         if (!config.whatsappNumber) {
@@ -1239,73 +1257,72 @@
     }
 
     function renderProducts(filter = null) {
-        const productsGrid = mainElement.querySelector('#products-grid');
-        if (!productsGrid) {
-            // If navigating away, ensure admin actions are hidden on potential stale cards
-             document.querySelectorAll('.product-admin-actions').forEach(el => el.style.display = isAdminLoggedIn ? 'flex' : 'none');
-            return;
-        }
-
-        productsGrid.innerHTML = '';
-        let productsToRender = config.products || [];
-
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        if (searchTerm) {
-            productsToRender = productsToRender.filter(p =>
-                p.name.toLowerCase().includes(searchTerm) ||
-                (p.id && p.id.toLowerCase().includes(searchTerm)) ||
-                (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-                config.categories.find(c => c.slug === p.category)?.name.toLowerCase().includes(searchTerm)
-            );
-        }
-
-        if (filter && filter !== 'all') {
-            productsToRender = productsToRender.filter(p => p.category === filter);
-        }
-
-        if (productsToRender.length === 0) {
-            productsGrid.innerHTML = '<p class="col-span-full text-center text-muted-foreground py-10" style="grid-column: 1 / -1;">Nenhum produto encontrado.</p>';
-            return;
-        }
-
-        productsToRender.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.dataset.productId = product.id;
-
-            const safeDescription = product.description ? product.description.replace(/<[^>]*>/g, '').substring(0, 100) + (product.description.length > 100 ? '...' : '') : '';
-
-            card.innerHTML = `
-                <div class="product-image">
-                    ${product.id ? `<div class="product-id-display">ID: ${product.id}</div>` : ''}
-                    <img src="${product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/400x250?text=Sem+Imagem'}" alt="${product.name}" loading="lazy">
-                </div>
-                <div class="product-info">
-                    <h3 class="product-title">${product.name}</h3>
-                    ${safeDescription ? `<p class="product-description">${safeDescription}</p>` : '<div class="product-description" style="flex-grow: 1;"></div>'}
-                    <div class="product-admin-actions" style="display: ${isAdminLoggedIn ? 'flex' : 'none'};">
-                        <button class="button button-secondary edit-product" data-id="${product.id}">Editar</button>
-                        <button class="button button-icon button-danger remove-product" data-id="${product.id}" title="Remover Produto">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            productsGrid.appendChild(card);
-
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.edit-product') && !e.target.closest('.remove-product')) {
-                    window.location.hash = `#product/${product.id}`;
-                }
-            });
-
-            // Add listeners only if admin buttons are potentially visible
-             const editButton = card.querySelector('.edit-product');
-             const removeButton = card.querySelector('.remove-product');
-             if (editButton) editButton.addEventListener('click', (e) => { e.stopPropagation(); if(isAdminLoggedIn) editProduct(product.id); });
-             if (removeButton) removeButton.addEventListener('click', (e) => { e.stopPropagation(); if(isAdminLoggedIn) removeProduct(product.id); });
-        });
+    const productsGrid = mainElement.querySelector('#products-grid');
+    if (!productsGrid) {
+        // Se navigating away, ensure admin actions are hidden on potential stale cards
+        document.querySelectorAll('.product-admin-actions').forEach(el => el.style.display = isAdminLoggedIn ? 'flex' : 'none');
+        return;
     }
+
+    productsGrid.innerHTML = '';
+    let productsToRender = config.products || [];
+
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+        productsToRender = productsToRender.filter(p =>
+            p.name.toLowerCase().includes(searchTerm) ||
+            (p.id && p.id.toLowerCase().includes(searchTerm)) ||
+            (p.description && p.description.toLowerCase().includes(searchTerm)) ||
+            config.categories.find(c => c.slug === p.category)?.name.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    if (filter && filter !== 'all') {
+        productsToRender = productsToRender.filter(p => p.category === filter);
+    }
+
+    if (productsToRender.length === 0) {
+        productsGrid.innerHTML = '<p class="col-span-full text-center text-muted-foreground py-10" style="grid-column: 1 / -1;">Nenhum produto encontrado.</p>';
+        return;
+    }
+
+    productsToRender.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.dataset.productId = product.id;
+
+        const safeDescription = product.description ? product.description.replace(/<[^>]*>/g, '').substring(0, 100) + (product.description.length > 100 ? '...' : '') : '';
+
+        card.innerHTML = `
+            <div class="product-image">
+                <img src="${product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/400x250?text=Sem+Imagem'}" alt="${product.name}" loading="lazy">
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">${product.name}</h3>
+                ${safeDescription ? `<p class="product-description">${safeDescription}</p>` : '<div class="product-description" style="flex-grow: 1;"></div>'}
+                <div class="product-admin-actions" style="display: ${isAdminLoggedIn ? 'flex' : 'none'};">
+                    <button class="button button-secondary edit-product" data-id="${product.id}">Editar</button>
+                    <button class="button button-icon button-danger remove-product" data-id="${product.id}" title="Remover Produto">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        productsGrid.appendChild(card);
+
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.edit-product') && !e.target.closest('.remove-product')) {
+                window.location.hash = `#product/${product.id}`;
+            }
+        });
+
+        // Add listeners only if admin buttons are potentially visible
+        const editButton = card.querySelector('.edit-product');
+        const removeButton = card.querySelector('.remove-product');
+        if (editButton) editButton.addEventListener('click', (e) => { e.stopPropagation(); if (isAdminLoggedIn) editProduct(product.id); });
+        if (removeButton) removeButton.addEventListener('click', (e) => { e.stopPropagation(); if (isAdminLoggedIn) removeProduct(product.id); });
+    });
+}
 
     function renderProductDetail(productId) {
         const product = config.products?.find(p => p.id === productId);
@@ -1929,30 +1946,32 @@ function shareCategory(slug) {
     }
 
     function sendOrderViaWhatsApp() {
-        if (cart.length === 0) { showToast('Seu carrinho está vazio.', 'error'); return; }
-        if (!config.whatsappNumber) { showToast('Número do WhatsApp não configurado.', 'error'); return; }
+    if (cart.length === 0) { showToast('Seu carrinho está vazio.', 'error'); return; }
+    if (!config.whatsappNumber) { showToast('Número do WhatsApp não configurado.', 'error'); return; }
 
-        let message = "Olá! Gostaria de fazer o seguinte pedido:\n\n";
-        cart.forEach(item => {
-            const price = typeof item.selectedVariation?.price === 'number' ? item.selectedVariation.price : 0;
-            const subtotal = (price * item.quantity).toFixed(2).replace('.', ',');
-            const variationText = item.selectedVariation?.type === 'quantity'
-                ? `${item.selectedVariation.amount || '?'} un.`
-                : `${item.selectedVariation.width || '?'}m x ${item.selectedVariation.height || '?'}m`;
+    console.log("Número de WhatsApp usado:", config.whatsappNumber); // Log para verificação
 
-            message += `*${item.name}* (ID: ${item.id || 'N/A'})\n`;
-            message += ` - Variação: ${variationText}\n`;
-            message += ` - Qtd: ${item.quantity}\n`;
-            message += ` - Subtotal: R$ ${subtotal}\n\n`;
-        });
-        message += `*Total do Pedido: R$ ${calculateTotal().toFixed(2).replace('.', ',')}*`;
+    let message = "Olá! Gostaria de fazer o seguinte pedido:\n\n";
+    cart.forEach(item => {
+        const price = typeof item.selectedVariation?.price === 'number' ? item.selectedVariation.price : 0;
+        const subtotal = (price * item.quantity).toFixed(2).replace('.', ',');
+        const variationText = item.selectedVariation?.type === 'quantity'
+            ? `${item.selectedVariation.amount || '?'} un.`
+            : `${item.selectedVariation.width || '?'}m x ${item.selectedVariation.height || '?'}m`;
 
-        const cleanNumber = config.whatsappNumber.replace(/\D/g, '');
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
+        message += `*${item.name}* (ID: ${item.id || 'N/A'})\n`;
+        message += ` - Variação: ${variationText}\n`;
+        message += ` - Qtd: ${item.quantity}\n`;
+        message += ` - Subtotal: R$ ${subtotal}\n\n`;
+    });
+    message += `*Total do Pedido: R$ ${calculateTotal().toFixed(2).replace('.', ',')}*`;
 
-        window.open(whatsappUrl, '_blank');
-        showToast('Pedido pronto para envio via WhatsApp!', 'info');
-    }
+    const cleanNumber = config.whatsappNumber.replace(/\D/g, '');
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, '_blank');
+    showToast('Pedido pronto para envio via WhatsApp!', 'info');
+}
 
 
     function showToast(message, type = 'info', duration = 3000) { // Mudei de 'success' para 'info' como padrão
